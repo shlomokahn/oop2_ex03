@@ -14,6 +14,7 @@
 FunctionCalculator::FunctionCalculator(std::istream& istr, std::ostream& ostr)
     : m_actions(createActions()), m_operations(createOperations()), m_istr(istr), m_ostr(ostr)
 {
+    m_istr.exceptions(std::ios::failbit | std::ios::badbit);
 }
 
 
@@ -21,11 +22,26 @@ void FunctionCalculator::run()
 {
     do
     {
-        m_ostr << '\n';
-        printOperations();
-        m_ostr << "Enter command ('help' for the list of available commands): ";
-        const auto action = readAction();
-        runAction(action);
+        try
+        {
+            m_ostr << '\n';
+            printOperations();
+            m_ostr << "Enter command ('help' for the list of available commands): ";
+            const auto action = readAction();
+            runAction(action);
+        }
+		catch (const std::exception& e)
+		{
+			m_ostr << "Error: " << e.what() << '\n';
+            m_istr.clear();
+            m_istr.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+		}
+		catch (...)
+		{
+			m_ostr << "Unknown error occurred\n";
+            m_istr.clear();
+            m_istr.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+		}
     } while (m_running);
 }
 
@@ -37,7 +53,12 @@ void FunctionCalculator::eval()
         const auto& operation = m_operations[*index];
 		int inputCount = operation->inputCount();
         int size = 0;
-        m_istr >> size;
+        m_istr >> size;//לבדוק שהגודל לא גדול מ5
+
+        if (size >= 5) {
+            throw std::invalid_argument("Matrix size cannot be greater than 5");
+        }
+
 		auto matrixVec = std::vector<Operation::T>();
         if (inputCount > 1)
             m_ostr << "\nPlease enter " << inputCount << " matrices:\n";

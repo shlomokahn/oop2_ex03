@@ -75,7 +75,7 @@ private:
     const ActionMap m_actions;
     OperationList m_operations;
     bool m_running = true;
-    std::istream& m_istr;
+    std::istream& m_istr;// ב read הוא הופך להיות קריאה מקובץ
     std::ostream& m_ostr;
 
     std::optional<int> readOperationIndex() const;

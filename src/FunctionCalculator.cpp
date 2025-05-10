@@ -14,7 +14,7 @@
 FunctionCalculator::FunctionCalculator(std::istream& istr, std::ostream& ostr)
     : m_actions(createActions()), m_operations(createOperations()), m_istr(istr), m_ostr(ostr)
 {
-    m_istr.exceptions(std::ios::failbit | std::ios::badbit);
+    m_istr.exceptions(std::ios::failbit);// | std::ios::badbit);
 }
 
 
@@ -34,13 +34,13 @@ void FunctionCalculator::run()
 		{
 			m_ostr << "Error: " << e.what() << '\n';
             m_istr.clear();
-            m_istr.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+          //  m_istr.ignore(std::numeric_limits<std::streamsize>::max(), ' ');
 		}
 		catch (...)
 		{
 			m_ostr << "Unknown error occurred\n";
             m_istr.clear();
-            m_istr.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+          //  m_istr.ignore(std::numeric_limits<std::streamsize>::max(), ' ');
 		}
     } while (m_running);
 }
@@ -55,9 +55,12 @@ void FunctionCalculator::eval()
         int size = 0;
         m_istr >> size;//לבדוק שהגודל לא גדול מ5
 
-        if (size >= 5) {
+        if (size > 5) {
             throw std::invalid_argument("Matrix size cannot be greater than 5");
         }
+		if (size <= 0) {
+			throw std::invalid_argument("Matrix size must be positive");
+		}
 
 		auto matrixVec = std::vector<Operation::T>();
         if (inputCount > 1)
@@ -122,9 +125,9 @@ std::optional<int> FunctionCalculator::readOperationIndex() const
 {
     int i = 0;
     m_istr >> i;
-    if (i >= static_cast<int>(m_operations.size()))
+    if (i >= static_cast<int>(m_operations.size()) || i < 0)
     {
-        m_ostr << "Operation #" << i << " doesn't exist\n";
+        throw std::invalid_argument("Operation #" + std::to_string(i) + " doesn't exist");
         return {};
     }
     return i;
@@ -155,7 +158,8 @@ void FunctionCalculator::runAction(Action action)
             break;
 
         case Action::Invalid:
-            m_ostr << "Command not found\n";
+
+            throw std::invalid_argument("Command not found");
             break;
 
         case Action::Eval:         eval();                     break;

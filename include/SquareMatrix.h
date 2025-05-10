@@ -36,6 +36,7 @@ public:
 	SquareMatrix Transpose() const;
 	//void print(std::ostream& ostr) const;
 private:
+	void correctNum(T num)const;
 	int m_size;
 	std::vector<std::vector<T>> m_matrix;
 };
@@ -72,6 +73,12 @@ inline std::istream& operator>>(std::istream& istr, SquareMatrix<int>& matrix)
 		for (int j = 0; j < matrix.size(); ++j)
 		{
 			istr >> matrix(i, j);
+			if (matrix(i, j) > 1000 || matrix(i, j) < -1024)
+			{
+				throw std::invalid_argument("Matrix element out of range");
+			}
+			//correctNum(matrix(i, j));
+
 		}
 	}
 	return istr;
@@ -86,6 +93,7 @@ SquareMatrix<T>::SquareMatrix(int size, const T& value)
 	for (int i = 0; i < size * size; ++i)
 	{
 		m_matrix[i / size][i % size] = value;
+		correctNum(value);
 	}
 }
 
@@ -122,6 +130,7 @@ SquareMatrix<T>& SquareMatrix<T>::operator+=(const SquareMatrix& rhs)
 		for (int j = 0; j < m_size; ++j)
 		{
 			m_matrix[i][j] += rhs.m_matrix[i][j];
+			correctNum(m_matrix[i][j]);
 		}
 	}
 	return *this;
@@ -135,6 +144,7 @@ SquareMatrix<T>& SquareMatrix<T>::operator-=(const SquareMatrix& rhs)
 		for (int j = 0; j < m_size; ++j)
 		{
 			m_matrix[i][j] -= rhs.m_matrix[i][j];
+			correctNum(m_matrix[i][j]);
 		}
 	}
 	return *this;
@@ -153,6 +163,16 @@ SquareMatrix<T> SquareMatrix<T>::Transpose() const
 	}
 	return result;
 }
+//================================
+template<typename T>
+inline void SquareMatrix<T>::correctNum(T num)const
+{
+	if (num > 1000 || num < -1024)
+	{
+		throw std::invalid_argument("Matrix element out of range");
+	}
+}
+//================================
 template <typename T>
 SquareMatrix<T> SquareMatrix<T>::operator*(const T& scalar) const
 {
@@ -162,6 +182,7 @@ SquareMatrix<T> SquareMatrix<T>::operator*(const T& scalar) const
 		for (int j = 0; j < m_size; ++j)
 		{
 			result(i, j) *= scalar;
+			correctNum(result(i, j));
 		}
 	}
 	return result;

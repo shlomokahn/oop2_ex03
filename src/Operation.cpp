@@ -11,3 +11,5 @@ void Operation::print(std::ostream& ostr, const std::vector<T>& input) const
 		ostr << "(\n" << input[i] << ")";
 	}
 }
+int Operation::m_count = 0;
+int Operation::m_maxCount = 10;

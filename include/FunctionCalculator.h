@@ -18,6 +18,7 @@ public:
     void run();
 
 private:
+    void insertSumFunctions();
     void eval();
     void del();
     void help();

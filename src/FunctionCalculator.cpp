@@ -20,7 +20,6 @@ FunctionCalculator::FunctionCalculator(std::istream& istr, std::ostream& ostr)
 
 void FunctionCalculator::run()
 {
-    insertSumFunctions();
     do
     {
         try
@@ -46,29 +45,7 @@ void FunctionCalculator::run()
     } while (m_running);
 }
 
-//=========================
-void FunctionCalculator::insertSumFunctions()
-{
-	int maxCount;
-    do
-    {
-        try {
-            m_ostr << "Please enter the max function: ";
-            m_istr >> maxCount;
 
-			if (maxCount < 2 || maxCount > 100) {
-				throw std::invalid_argument("Max function must be between 2 and 100");
-			}
-        }
-		catch (const std::exception& e) {
-			m_istr.clear();
-			m_istr.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            m_ostr << "Error: " << e.what() << '\n';
-		}
-    } while (maxCount < 2 || maxCount > 100);
-	m_operations[0]->setMaxCount(maxCount);
-}
-//=========================
 void FunctionCalculator::eval()
 {
     if (auto index = readOperationIndex(); index)
@@ -140,7 +117,6 @@ void FunctionCalculator::printOperations() const
         m_operations[i]->print(m_ostr,true);
         m_ostr << '\n';
     }
-	m_ostr << "the number of max operations is: " << Operation::getMaxCount() << '\n';
     m_ostr << '\n';
 }
 

@@ -11,18 +11,8 @@ class Operation
 {
 public:
     using T = SquareMatrix<int>;
-    Operation() 
-    {
-        m_count++; 
-	    if (m_count > m_maxCount)
-	    {
-		    throw std::invalid_argument("Too many operations");
-	    }
+    virtual ~Operation() = default;
 
-    }
-	virtual ~Operation() { m_count--; }
-	void setMaxCount(int maxCount) { m_maxCount = maxCount; }
-    static int getMaxCount() { return m_maxCount; }
     // Return the number of inputs (the range size) expected by compute()
     virtual int inputCount() const = 0;
 
@@ -33,8 +23,4 @@ public:
     virtual void print(std::ostream& ostr, bool first_print = false) const = 0;
 
     virtual void print(std::ostream& ostr, const std::vector<T>& input) const;
-private:
-	static int m_count;
-    static int m_maxCount;
-
 };

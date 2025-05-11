@@ -10,4 +10,7 @@ class UnaryOperation : public Operation
 public:
     UnaryOperation();
     int inputCount() const override;
+    ~UnaryOperation() override = 0
+    {
+    }
 };

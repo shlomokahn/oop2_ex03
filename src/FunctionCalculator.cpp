@@ -9,51 +9,62 @@
 
 #include <iostream>
 #include <algorithm>
+#include <sstream>
 
 
 FunctionCalculator::FunctionCalculator(std::istream& istr, std::ostream& ostr)
     : m_actions(createActions()), m_operations(createOperations()), m_istr(istr), m_ostr(ostr)
 {
-    m_istr.exceptions(std::ios::failbit);// | std::ios::badbit);
+    
 }
 
 
-void FunctionCalculator::run()
+void FunctionCalculator::run(std::istream& istr)
 {
-    do
+    try
     {
-        try
-        {
-            m_ostr << '\n';
-            printOperations();
-            m_ostr << "Enter command ('help' for the list of available commands): ";
-            const auto action = readAction();
-            runAction(action);
+        istr.exceptions(std::ios::failbit | std::ios::badbit);
+        m_ostr << '\n';
+        printOperations();
+        m_ostr << "Enter command ('help' for the list of available commands): ";
+    	std::getline(istr, m_inputLine);
+        auto iss =  std::istringstream(m_inputLine);
+        iss.exceptions(std::ios::failbit | std::ios::badbit);
+        const auto action = readAction(iss);
+        runAction(action,iss);
         }
 		catch (const std::exception& e)
 		{
 			m_ostr << "Error: " << e.what() << '\n';
+
             m_istr.clear();
-          //  m_istr.ignore(std::numeric_limits<std::streamsize>::max(), ' ');
+            //m_istr.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 		}
 		catch (...)
 		{
 			m_ostr << "Unknown error occurred\n";
             m_istr.clear();
-          //  m_istr.ignore(std::numeric_limits<std::streamsize>::max(), ' ');
+            //m_istr.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 		}
+}
+//=================================
+void FunctionCalculator::run()
+{
+    do
+    {
+        run(std::cin);
     } while (m_running);
 }
+//=================================
 
-
-void FunctionCalculator::eval()
+void FunctionCalculator::eval(std::istringstream& iss)
 {
-    if (auto index = readOperationIndex(); index)
+    if (auto index = readOperationIndex(iss); index)
     {
         const auto& operation = m_operations[*index];
 		int inputCount = operation->inputCount();
         int size = 0;
-        m_istr >> size;//לבדוק שהגודל לא גדול מ5
+        iss >> size;//לבדוק שהגודל לא גדול מ5
 
         if (size > 5) {
             throw std::invalid_argument("Matrix size cannot be greater than 5");
@@ -81,9 +92,9 @@ void FunctionCalculator::eval()
 }
 
 
-void FunctionCalculator::del()
+void FunctionCalculator::del(std::istringstream& iss)
 {
-    if (auto i = readOperationIndex(); i)
+    if (auto i = readOperationIndex(iss); i)
     {
         m_operations.erase(m_operations.begin() + *i);
     }
@@ -106,7 +117,24 @@ void FunctionCalculator::exit()
     m_ostr << "Goodbye!\n";
     m_running = false;
 }
-
+//=================================
+void FunctionCalculator::read(std::istringstream& iss)
+{
+    std::ifstream file;
+    std::string filename;
+    std::cout << "Enter file name: ";
+	iss >> filename;
+    file.open(filename);
+	if (!file)
+	{
+		throw std::invalid_argument("File not found");
+	}
+    do
+    {
+	run(file);
+    } while (m_running && file.eof());
+}
+//============================
 
 void FunctionCalculator::printOperations() const
 {
@@ -121,10 +149,10 @@ void FunctionCalculator::printOperations() const
 }
 
 
-std::optional<int> FunctionCalculator::readOperationIndex() const
+std::optional<int> FunctionCalculator::readOperationIndex(std::istringstream& iss) const
 {
     int i = 0;
-    m_istr >> i;
+    iss >> i;
     if (i >= static_cast<int>(m_operations.size()) || i < 0)
     {
         throw std::invalid_argument("Operation #" + std::to_string(i) + " doesn't exist");
@@ -134,10 +162,10 @@ std::optional<int> FunctionCalculator::readOperationIndex() const
 }
 
 
-FunctionCalculator::Action FunctionCalculator::readAction() const
+FunctionCalculator::Action FunctionCalculator::readAction(std::istringstream& iss) const
 {
     auto action = std::string();
-    m_istr >> action;
+    iss >> action;
 
     const auto i = std::ranges::find(m_actions, action, &ActionDetails::command);
     if (i != m_actions.end())
@@ -149,7 +177,7 @@ FunctionCalculator::Action FunctionCalculator::readAction() const
 }
 
 
-void FunctionCalculator::runAction(Action action)
+void FunctionCalculator::runAction(Action action, std::istringstream& iss)
 {
     switch (action)
     {
@@ -162,16 +190,17 @@ void FunctionCalculator::runAction(Action action)
             throw std::invalid_argument("Command not found");
             break;
 
-        case Action::Eval:         eval();                     break;
-        case Action::Add:          binaryFunc<Add>();          break;
-        case Action::Sub:          binaryFunc<Sub>();          break;
-        case Action::Comp:         binaryFunc<Comp>();         break;
-        case Action::Del:          del();                      break;
+        case Action::Eval:         eval(iss);                     break;
+        case Action::Add:          binaryFunc<Add>(iss);          break;
+        case Action::Sub:          binaryFunc<Sub>(iss);          break;
+        case Action::Comp:         binaryFunc<Comp>(iss);         break;
+        case Action::Del:          del(iss);                      break;
         case Action::Help:         help();                     break;
         case Action::Exit:         exit();                     break;
+		case Action::Read:         read(iss);                     break;
         //case Action::Iden:          unaryFunc<Identity>();      break;
         //case Action::Tran:          unaryFunc<Transpose>();      break;
-        case Action::Scal:          unaryWithIntFunc<Scalar>();      break;
+        case Action::Scal:          unaryWithIntFunc<Scalar>(iss);      break;
     }
 }
 
@@ -224,7 +253,12 @@ FunctionCalculator::ActionMap FunctionCalculator::createActions() const
             "exit",
             " - exit the program",
             Action::Exit
-        }
+        },
+		{
+			"read",
+			" - read from file",
+			Action::Read
+		}
     };
 }
 

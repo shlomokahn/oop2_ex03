@@ -1,11 +1,11 @@
-#include "FunctionCalculator.h"
+#include "FunctionCalculator.h"  
 
-#include <string>
-#include <iostream>
+#include <string>  
+#include <iostream>  
 
 
-int main()
-{
+int main()  
+{  
     FunctionCalculator(std::cin, std::cout).run();
 
 }

@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <iostream>
+#include <sstream>
 
 
 template <typename T>
@@ -70,9 +71,15 @@ inline std::istream& operator>>(std::istream& istr, SquareMatrix<int>& matrix)
 {
 	for (int i = 0; i < matrix.size(); ++i)
 	{
+		std::string inputLine;
+		std::getline(istr, inputLine);
+
+		auto iss = std::istringstream(inputLine);
+		iss.exceptions(std::ios::failbit | std::ios::badbit);
+
 		for (int j = 0; j < matrix.size(); ++j)
 		{
-			istr >> matrix(i, j);
+			iss >> matrix(i, j);
 			if (matrix(i, j) > 1000 || matrix(i, j) < -1024)
 			{
 				throw std::invalid_argument("Matrix element out of range");

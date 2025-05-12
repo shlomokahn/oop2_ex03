@@ -27,30 +27,43 @@ void FunctionCalculator::run(std::istream& istr)
 
         m_ostr << '\n';
         printOperations();
-        
+
         m_ostr << "Enter command ('help' for the list of available commands): ";
+
+        // רק אם נותרו תווים מיותרים
+        if (istr.peek() == '\n')
+            istr.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
         std::string inputLine;
-    	std::getline(istr, inputLine);
-        auto iss =  std::istringstream(inputLine);
+        std::getline(istr, inputLine);
 
+        // מתעלם רק אם השורה באמת ריקה
+        if (inputLine.empty())
+            return;
+
+        auto iss = std::istringstream(inputLine);
         iss.exceptions(std::ios::failbit | std::ios::badbit);
-        const auto action = readAction(iss);
-        runAction(action,iss, istr);
-        }
-		catch (const std::exception& e)
-		{
-			m_ostr << "Error: " << e.what() << '\n';
 
-            istr.clear();
-            //istr.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-		}
-		catch (...)
-		{
-			m_ostr << "Unknown error occurred\n";
-            istr.clear();
-            //istr.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-		}
+        const auto action = readAction(iss);
+        runAction(action, iss, istr);
+    }
+    catch (const std::exception& e)
+    {
+        m_ostr << "Error: " << e.what() << '\n';
+
+        istr.clear();
+        istr.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+    catch (...)
+    {
+        m_ostr << "Unknown error occurred\n";
+
+        istr.clear();
+        istr.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+
 }
+
 //=================================
 void FunctionCalculator::run()
 {
@@ -81,14 +94,20 @@ void FunctionCalculator::eval(std::istringstream& iss, std::istream& istr)
         if (inputCount > 1)
             m_ostr << "\nPlease enter " << inputCount << " matrices:\n";
 
-		for (int i = 0; i < inputCount; ++i)
-		{
-            auto input = Operation::T(size);
-            m_ostr << "\nEnter a " << size << "x" << size << " matrix:\n";
-            istr >> input;
-			matrixVec.push_back(input);
+for (int i = 0; i < inputCount; ++i)
+{
+    auto input = Operation::T(size);
+    m_ostr << "\nEnter a " << size << "x" << size << " matrix:\n";
+    try {
+        istr >> input;
+    } catch (...) {
+        istr.clear();
+        istr.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        throw std::invalid_argument("Invalid matrix input");
+    }
+    matrixVec.push_back(input);
+}
 
-		}
         m_ostr << "\n";
         operation->print(m_ostr, matrixVec);
         m_ostr << " = \n" << operation->compute(matrixVec);

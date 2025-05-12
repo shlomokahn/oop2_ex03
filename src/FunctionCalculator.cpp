@@ -19,7 +19,7 @@ FunctionCalculator::FunctionCalculator( std::ostream& ostr)
 }
 
 
-void FunctionCalculator::run(std::istream& istr)
+void FunctionCalculator::run(std::istream& istr,bool& isFromFile)
 {
     try
     {
@@ -42,16 +42,14 @@ void FunctionCalculator::run(std::istream& istr)
     catch (const std::exception& e)
     {
         m_ostr << "Error: " << e.what() << '\n';
-
         istr.clear();
-       // istr.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        isFromFile = false;
     }
     catch (...)
     {
         m_ostr << "Unknown error occurred\n";
-
         istr.clear();
-        //istr.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        isFromFile = false;
     }
 
 }
@@ -59,9 +57,10 @@ void FunctionCalculator::run(std::istream& istr)
 //=================================
 void FunctionCalculator::run()
 {
+	bool isFromFile = false;
     do
     {
-        run(std::cin);
+        run(std::cin, isFromFile);
     } while (m_running);
 }
 //=================================
@@ -137,10 +136,22 @@ void FunctionCalculator::read(std::istringstream& iss)
 	{
 		throw std::invalid_argument("File not found");
 	}
+	bool isFromFile = true;
     do
     {
-	run(file);
-    } while (m_running && !file.eof());
+	    run(file, isFromFile);
+        if(!isFromFile)
+        {
+            m_ostr << "Continue reading from the file? (Yes = y,No = Any other buttou): ";
+			char YesNo = '0';
+            std::cin >> YesNo;
+            if (YesNo == 'y' || YesNo == 'Y')
+                isFromFile = true;
+
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
+
+    } while (m_running && !file.eof() && isFromFile);
 }
 //============================
 

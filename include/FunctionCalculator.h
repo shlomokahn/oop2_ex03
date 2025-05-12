@@ -16,7 +16,7 @@ class FunctionCalculator
 {
 public:
     FunctionCalculator( std::ostream& ostr);
-    void run(std::istream& istr);
+    void run(std::istream& istr, bool& isFromFile);
     void run();
 
 private:

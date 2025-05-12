@@ -12,8 +12,8 @@
 #include <sstream>
 
 
-FunctionCalculator::FunctionCalculator(std::istream& istr, std::ostream& ostr)
-    : m_actions(createActions()), m_operations(createOperations()), m_istr(istr), m_ostr(ostr)
+FunctionCalculator::FunctionCalculator( std::ostream& ostr)
+    : m_actions(createActions()), m_operations(createOperations()), m_ostr(ostr)
 {
     
 }
@@ -24,27 +24,31 @@ void FunctionCalculator::run(std::istream& istr)
     try
     {
         istr.exceptions(std::ios::failbit | std::ios::badbit);
+
         m_ostr << '\n';
         printOperations();
+        
         m_ostr << "Enter command ('help' for the list of available commands): ";
-    	std::getline(istr, m_inputLine);
-        auto iss =  std::istringstream(m_inputLine);
+        std::string inputLine;
+    	std::getline(istr, inputLine);
+        auto iss =  std::istringstream(inputLine);
+
         iss.exceptions(std::ios::failbit | std::ios::badbit);
         const auto action = readAction(iss);
-        runAction(action,iss);
+        runAction(action,iss, istr);
         }
 		catch (const std::exception& e)
 		{
 			m_ostr << "Error: " << e.what() << '\n';
 
-            m_istr.clear();
-            //m_istr.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            istr.clear();
+            //istr.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 		}
 		catch (...)
 		{
 			m_ostr << "Unknown error occurred\n";
-            m_istr.clear();
-            //m_istr.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            istr.clear();
+            //istr.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 		}
 }
 //=================================
@@ -57,7 +61,7 @@ void FunctionCalculator::run()
 }
 //=================================
 
-void FunctionCalculator::eval(std::istringstream& iss)
+void FunctionCalculator::eval(std::istringstream& iss, std::istream& istr)
 {
     if (auto index = readOperationIndex(iss); index)
     {
@@ -81,7 +85,7 @@ void FunctionCalculator::eval(std::istringstream& iss)
 		{
             auto input = Operation::T(size);
             m_ostr << "\nEnter a " << size << "x" << size << " matrix:\n";
-            m_istr >> input;
+            istr >> input;
 			matrixVec.push_back(input);
 
 		}
@@ -122,7 +126,6 @@ void FunctionCalculator::read(std::istringstream& iss)
 {
     std::ifstream file;
     std::string filename;
-    std::cout << "Enter file name: ";
 	iss >> filename;
     file.open(filename);
 	if (!file)
@@ -132,7 +135,7 @@ void FunctionCalculator::read(std::istringstream& iss)
     do
     {
 	run(file);
-    } while (m_running && file.eof());
+    } while (m_running && !file.eof());
 }
 //============================
 
@@ -177,7 +180,7 @@ FunctionCalculator::Action FunctionCalculator::readAction(std::istringstream& is
 }
 
 
-void FunctionCalculator::runAction(Action action, std::istringstream& iss)
+void FunctionCalculator::runAction(Action action, std::istringstream& iss, std::istream& istr)
 {
     switch (action)
     {
@@ -190,7 +193,7 @@ void FunctionCalculator::runAction(Action action, std::istringstream& iss)
             throw std::invalid_argument("Command not found");
             break;
 
-        case Action::Eval:         eval(iss);                     break;
+        case Action::Eval:         eval(iss,istr);                     break;
         case Action::Add:          binaryFunc<Add>(iss);          break;
         case Action::Sub:          binaryFunc<Sub>(iss);          break;
         case Action::Comp:         binaryFunc<Comp>(iss);         break;

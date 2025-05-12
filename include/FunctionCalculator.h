@@ -14,12 +14,12 @@ class Operation;
 class FunctionCalculator
 {
 public:
-    FunctionCalculator(std::istream& istr, std::ostream& ostr);
+    FunctionCalculator( std::ostream& ostr);
     void run(std::istream& istr);
     void run();
 
 private:
-    void eval(std::istringstream& iss);
+    void eval(std::istringstream& iss, std::istream& istr);
     void del(std::istringstream& iss);
     void help();
     void exit();
@@ -78,16 +78,12 @@ private:
     const ActionMap m_actions;
     OperationList m_operations;
     bool m_running = true;
-    std::istream& m_istr;// ב read הוא הופך להיות קריאה מקובץ
     std::ostream& m_ostr;
-
-   // std::iostream m_istr;
-    std::string m_inputLine;
 
     std::optional<int> readOperationIndex(std::istringstream& iss) const;
     Action readAction(std::istringstream& iss) const;
 
-    void runAction(Action action, std::istringstream& iss);
+    void runAction(Action action, std::istringstream& iss, std::istream& istr);
 
     ActionMap createActions() const;
     OperationList createOperations() const ;

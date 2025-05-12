@@ -6,6 +6,6 @@
 
 int main()  
 {  
-    FunctionCalculator(std::cin, std::cout).run();
+    FunctionCalculator(std::cout).run();
 
 }

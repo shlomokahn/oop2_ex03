@@ -7,6 +7,7 @@
 #include <optional>
 #include <iostream>
 #include <fstream> 
+#include <sstream>
 
 class Operation;
 
@@ -43,7 +44,7 @@ private:
     void unaryWithIntFunc(std::istringstream& iss)
     {
         int i = 0;
-        std::cin >> i;
+        iss >> i;
         m_operations.push_back(std::make_shared<FuncType>(i));
     }
     void printOperations() const;

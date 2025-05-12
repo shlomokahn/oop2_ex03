@@ -9,7 +9,7 @@
 
 #include <iostream>
 #include <algorithm>
-#include <sstream>
+
 
 
 FunctionCalculator::FunctionCalculator( std::ostream& ostr)

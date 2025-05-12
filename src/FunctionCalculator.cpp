@@ -15,7 +15,6 @@
 FunctionCalculator::FunctionCalculator( std::ostream& ostr)
     : m_actions(createActions()), m_operations(createOperations()), m_ostr(ostr)
 {
-    
 }
 
 
@@ -27,6 +26,7 @@ void FunctionCalculator::run(std::istream& istr,bool& isFromFile)
 
         m_ostr << '\n';
         printOperations();
+        m_ostr <<"The maximum rebellious operators are: " << m_maxOperations <<"\n\n";
 
         m_ostr << "Enter command ('help' for the list of available commands): ";
 
@@ -154,6 +154,22 @@ void FunctionCalculator::read(std::istringstream& iss)
     } while (m_running && !file.eof() && isFromFile);
 }
 //============================
+void FunctionCalculator::resize(std::istream& istr)
+{
+    try {
+        m_ostr << "\nEnter the number of authorized operators: ";
+        int size;
+        istr >> size;
+        if (size > 100 || size < 2)
+            throw std::exception("Max oprations cannot be greater than 100 or smaler then 2");
+        m_maxOperations = size;
+    }
+    catch (std::exception& e)
+    {
+      m_ostr << "Error: " << e.what();
+    }
+}
+//============================
 
 void FunctionCalculator::printOperations() const
 {
@@ -209,17 +225,18 @@ void FunctionCalculator::runAction(Action action, std::istringstream& iss, std::
             throw std::invalid_argument("Command not found");
             break;
 
-        case Action::Eval:         eval(iss,istr);                     break;
-        case Action::Add:          binaryFunc<Add>(iss);          break;
-        case Action::Sub:          binaryFunc<Sub>(iss);          break;
-        case Action::Comp:         binaryFunc<Comp>(iss);         break;
-        case Action::Del:          del(iss);                      break;
+        case Action::Eval:         eval(iss,istr);             break;
+        case Action::Add:          binaryFunc<Add>(iss);       break;
+        case Action::Sub:          binaryFunc<Sub>(iss);       break;
+        case Action::Comp:         binaryFunc<Comp>(iss);      break;
+        case Action::Del:          del(iss);                   break;
         case Action::Help:         help();                     break;
         case Action::Exit:         exit();                     break;
-		case Action::Read:         read(iss);                     break;
+		case Action::Read:         read(iss);                  break;
         //case Action::Iden:          unaryFunc<Identity>();      break;
         //case Action::Tran:          unaryFunc<Transpose>();      break;
-        case Action::Scal:          unaryWithIntFunc<Scalar>(iss);      break;
+        case Action::Scal:         unaryWithIntFunc<Scalar>(iss); break;
+        case Action::Resize:       resize(istr);                   break;
     }
 }
 
@@ -231,31 +248,31 @@ FunctionCalculator::ActionMap FunctionCalculator::createActions() const
         {
             "eval",
             "(uate) num n - compute the result of function #num on an n×n matrix "
-			"(that will be prompted)",
+            "(that will be prompted)",
             Action::Eval
         },
         {
             "scal",
             "(ar) val - creates an operation that multiplies the "
-			"given matrix by scalar val",
+            "given matrix by scalar val",
             Action::Scal
         },
         {
             "add",
             " num1 num2 - creates an operation that is the addition of the result of operation #num1 "
-			"and the result of operation #num2",
+            "and the result of operation #num2",
             Action::Add
         },
          {
             "sub",
             " num1 num2 - creates an operation that is the subtraction of the result of operation #num1 "
-			"and the result of operation #num2",
+            "and the result of operation #num2",
             Action::Sub
         },
         {
             "comp",
             "(osite) num1 num2 - creates an operation that is the composition of operation #num1 "
-			"and operation #num2",
+            "and operation #num2",
             Action::Comp
         },
         {
@@ -273,11 +290,16 @@ FunctionCalculator::ActionMap FunctionCalculator::createActions() const
             " - exit the program",
             Action::Exit
         },
-		{
-			"read",
-			" - read from file",
-			Action::Read
-		}
+        {
+            "read",
+            " - read from file",
+            Action::Read
+        },
+        {
+            "resize",
+            " - resize the max options",
+            Action::Resize
+        }
     };
 }
 

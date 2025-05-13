@@ -13,7 +13,7 @@ public:
 	char getChar();
 	std::string getString();
 	void checkEndOfInput();
-	static std::string getLine(){return m_inputLine;}
+	static std::string getLine() { return m_inputLine; }
 
 
 private:  

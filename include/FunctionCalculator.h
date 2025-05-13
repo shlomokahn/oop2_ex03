@@ -29,6 +29,7 @@ private:
     void resize(std::istream& istr);
 
 	bool m_isFromFile = false;
+    int m_maxOperations = 0;
 
     template <typename FuncType>
     void binaryFunc(inputStringStream& iss)
@@ -95,5 +96,4 @@ private:
 
     ActionMap createActions() const;
     OperationList createOperations() const ;
-    int m_maxOperations = 0;
 };

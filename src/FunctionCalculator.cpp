@@ -40,13 +40,13 @@ void FunctionCalculator::run(std::istream& istr)
     }
     catch (const std::exception& e)
     {
-        m_ostr << "Error: " << e.what() << '\n';
-        istr.clear();
-
         if (m_isFromFile)
         {
-            throw std::invalid_argument(inputStringStream::getLine());
+            throw std::invalid_argument(inputStringStream::getLine() + " : Error: " + e.what());
         }
+
+        m_ostr << "Error: " << e.what() << '\n';
+
     }
 
 }
@@ -136,6 +136,7 @@ void FunctionCalculator::read(inputStringStream& iss)
         try
         {
             run(file);
+            m_isFromFile = true;
         }
 
         catch(const std::exception& e)

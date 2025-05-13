@@ -25,6 +25,7 @@ private:
     void help();
     void exit();
     void read(std::istringstream& iss);
+    void resize(std::istream& istr);
     void checkEndOfInput(std::istringstream& iss);
 
     template <typename FuncType>
@@ -67,6 +68,7 @@ private:
         Help,
         Exit,
         Read,
+        Resize,
     };
 
     struct ActionDetails
@@ -91,4 +93,5 @@ private:
 
     ActionMap createActions() const;
     OperationList createOperations() const ;
+    int m_maxOperations = 0;
 };

@@ -72,7 +72,8 @@ void FunctionCalculator::eval(std::istringstream& iss, std::istream& istr)
         const auto& operation = m_operations[*index];
 		int inputCount = operation->inputCount();
         int size = 0;
-        iss >> size;//לבדוק שהגודל לא גדול מ5
+        iss >> size;
+        checkEndOfInput(iss);
 
         if (size > 5) {
             throw std::invalid_argument("Matrix size cannot be greater than 5");
@@ -104,6 +105,7 @@ void FunctionCalculator::del(std::istringstream& iss)
 {
     if (auto i = readOperationIndex(iss); i)
     {
+        checkEndOfInput(iss);
         m_operations.erase(m_operations.begin() + *i);
     }
 }
@@ -131,6 +133,7 @@ void FunctionCalculator::read(std::istringstream& iss)
     std::ifstream file;
     std::string filename;
 	iss >> filename;
+    checkEndOfInput(iss);
     file.open(filename);
 	if (!file)
 	{
@@ -152,6 +155,16 @@ void FunctionCalculator::read(std::istringstream& iss)
         }
 
     } while (m_running && !file.eof() && isFromFile);
+}
+//==============================
+void FunctionCalculator::checkEndOfInput(std::istringstream& iss)
+{
+	if (iss.eof())
+		return;
+
+    iss >> std::ws;
+    if (!iss.eof())
+        throw std::invalid_argument("Too many characters");
 }
 //============================
 
@@ -214,8 +227,8 @@ void FunctionCalculator::runAction(Action action, std::istringstream& iss, std::
         case Action::Sub:          binaryFunc<Sub>(iss);          break;
         case Action::Comp:         binaryFunc<Comp>(iss);         break;
         case Action::Del:          del(iss);                      break;
-        case Action::Help:         help();                     break;
-        case Action::Exit:         exit();                     break;
+        case Action::Help:         checkEndOfInput(iss);help();                     break;
+        case Action::Exit:         checkEndOfInput(iss);exit();                     break;
 		case Action::Read:         read(iss);                     break;
         //case Action::Iden:          unaryFunc<Identity>();      break;
         //case Action::Tran:          unaryFunc<Transpose>();      break;

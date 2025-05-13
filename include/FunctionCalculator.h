@@ -25,12 +25,14 @@ private:
     void help();
     void exit();
     void read(std::istringstream& iss);
+    void checkEndOfInput(std::istringstream& iss);
 
     template <typename FuncType>
     void binaryFunc(std::istringstream& iss)
     {
         if (auto f0 = readOperationIndex(iss), f1 = readOperationIndex(iss); f0 && f1)
         {
+            checkEndOfInput(iss);
             m_operations.push_back(std::make_shared<FuncType>(m_operations[*f0], m_operations[*f1]));
         }
     }
@@ -45,6 +47,7 @@ private:
     {
         int i = 0;
         iss >> i;
+        checkEndOfInput(iss);
         m_operations.push_back(std::make_shared<FuncType>(i));
     }
     void printOperations() const;

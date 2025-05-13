@@ -85,7 +85,6 @@ inline std::istream& operator>>(std::istream& istr, SquareMatrix<int>& matrix)
 				throw std::invalid_argument("Matrix element out of range");
 			}
 		}
-			//correctNum(matrix(i, j));
 			if (!iss.eof())
 				iss >> std::ws;
 			if (!iss.eof())

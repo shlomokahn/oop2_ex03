@@ -20,6 +20,7 @@ FunctionCalculator::FunctionCalculator( std::ostream& ostr)
 
 void FunctionCalculator::run(std::istream& istr)
 {
+        std::string inputLine;
     try
     {
         istr.exceptions(std::ios::failbit | std::ios::badbit);
@@ -30,7 +31,6 @@ void FunctionCalculator::run(std::istream& istr)
 
         m_ostr << "Enter command ('help' for the list of available commands): ";
 
-        std::string inputLine;
         std::getline(istr, inputLine);
 
         auto iss = std::istringstream(inputLine);
@@ -43,13 +43,18 @@ void FunctionCalculator::run(std::istream& istr)
     {
         m_ostr << "Error: " << e.what() << '\n';
         istr.clear();
-        m_isFromFile = false;
+
+        if (m_isFromFile)
+            throw std::invalid_argument(inputLine);
     }
     catch (...)
     {
         m_ostr << "Unknown error occurred\n";
         istr.clear();
-        m_isFromFile = false;
+
+        if(m_isFromFile)
+            throw std::invalid_argument(inputLine);
+        
     }
 
 }
@@ -60,7 +65,8 @@ void FunctionCalculator::run()
 	resize(std::cin);
     do
     {
-        run(std::cin);
+            run(std::cin);
+
     } while (m_running);
 }
 //=================================
@@ -142,19 +148,28 @@ void FunctionCalculator::read(std::istringstream& iss)
     m_isFromFile = true;
     do
     {
-	    run(file);
-        if(!m_isFromFile)
+        try
         {
-            m_ostr << "Continue reading from the file? (Yes = y,No = Any other buttou): ";
+            run(file);
+        }
+
+        catch(const std::exception& e)
+        {
+            m_ostr << "Error in:" << e.what() << "\n"
+                <<"Continue reading from the file? (Yes = y,No = Any other buttou): ";
 			char YesNo;
             std::cin >> YesNo;
+
             if (YesNo == 'y' || YesNo == 'Y')
                 m_isFromFile = true;
+			else
+                m_isFromFile = false;
 
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
 
     } while (m_running && !file.eof() && m_isFromFile);
+    m_isFromFile = false;
 }
 //==============================
 void FunctionCalculator::checkEndOfInput(std::istringstream& iss)

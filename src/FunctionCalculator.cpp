@@ -18,7 +18,7 @@ FunctionCalculator::FunctionCalculator( std::ostream& ostr)
 }
 
 
-void FunctionCalculator::run(std::istream& istr,bool& isFromFile)
+void FunctionCalculator::run(std::istream& istr)
 {
     try
     {
@@ -43,13 +43,13 @@ void FunctionCalculator::run(std::istream& istr,bool& isFromFile)
     {
         m_ostr << "Error: " << e.what() << '\n';
         istr.clear();
-        isFromFile = false;
+        m_isFromFile = false;
     }
     catch (...)
     {
         m_ostr << "Unknown error occurred\n";
         istr.clear();
-        isFromFile = false;
+        m_isFromFile = false;
     }
 
 }
@@ -57,11 +57,10 @@ void FunctionCalculator::run(std::istream& istr,bool& isFromFile)
 //=================================
 void FunctionCalculator::run()
 {
-	bool isFromFile = false;
 	resize(std::cin);
     do
     {
-        run(std::cin, isFromFile);
+        run(std::cin);
     } while (m_running);
 }
 //=================================
@@ -140,22 +139,22 @@ void FunctionCalculator::read(std::istringstream& iss)
 	{
 		throw std::invalid_argument("File not found");
 	}
-	bool isFromFile = true;
+    m_isFromFile = true;
     do
     {
-	    run(file, isFromFile);
-        if(!isFromFile)
+	    run(file);
+        if(!m_isFromFile)
         {
             m_ostr << "Continue reading from the file? (Yes = y,No = Any other buttou): ";
-			char YesNo = '0';
+			char YesNo;
             std::cin >> YesNo;
             if (YesNo == 'y' || YesNo == 'Y')
-                isFromFile = true;
+                m_isFromFile = true;
 
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
 
-    } while (m_running && !file.eof() && isFromFile);
+    } while (m_running && !file.eof() && m_isFromFile);
 }
 //==============================
 void FunctionCalculator::checkEndOfInput(std::istringstream& iss)
@@ -180,7 +179,7 @@ void FunctionCalculator::resize(std::istream& istr)
             {
                 throw std::invalid_argument("Invalid input. Please enter a valid integer.");
             }
-
+            // לבדוק שאין עוד תוים
             if (size > 100 || size < 2)
             {
                 throw std::invalid_argument("Max operations cannot be greater than 100 or smaller than 2.");
@@ -287,7 +286,7 @@ void FunctionCalculator::runAction(Action action, std::istringstream& iss, std::
         //case Action::Iden:          unaryFunc<Identity>();      break;
         //case Action::Tran:          unaryFunc<Transpose>();      break;
         case Action::Scal:         checkMaxOperations(); unaryWithIntFunc<Scalar>(iss); break;
-        case Action::Resize:       resize(istr);                   break;
+        case Action::Resize:       checkEndOfInput(iss);resize(istr);                   break;
     }
 }
 //=================================

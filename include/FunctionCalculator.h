@@ -16,7 +16,7 @@ class FunctionCalculator
 {
 public:
     FunctionCalculator( std::ostream& ostr);
-    void run(std::istream& istr, bool& isFromFile);
+    void run(std::istream& istr);
     void run();
 
 private:
@@ -27,6 +27,8 @@ private:
     void read(std::istringstream& iss);
     void resize(std::istream& istr);
     void checkEndOfInput(std::istringstream& iss);
+
+	bool m_isFromFile = false;
 
     template <typename FuncType>
     void binaryFunc(std::istringstream& iss)

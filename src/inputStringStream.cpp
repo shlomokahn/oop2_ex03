@@ -2,10 +2,9 @@
 
 inputStringStream::inputStringStream(std::istream& istr)
 {
-	std::string inputLine;
-	std::getline(istr, inputLine);
+	std::getline(istr, m_inputLine);
 
-	m_iss = std::istringstream(inputLine);
+	m_iss = std::istringstream(m_inputLine);
 	m_iss.exceptions(std::ios::failbit | std::ios::badbit);
 }
 //=================================
@@ -18,6 +17,13 @@ int inputStringStream::getInt(const std::string error,const int min, const int m
 		throw std::invalid_argument(error);
 	}
 	return i;
+}
+//=================================
+char inputStringStream::getChar()
+{
+	char ch;
+	m_iss >> ch;
+	return ch;
 }
 //=================================
 std::string inputStringStream::getString()
@@ -36,3 +42,5 @@ void inputStringStream::checkEndOfInput()
 	if (!m_iss.eof())
 		throw std::invalid_argument("Too many characters");
 }
+std::string inputStringStream::m_inputLine;
+

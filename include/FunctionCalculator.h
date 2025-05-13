@@ -8,6 +8,7 @@
 #include <iostream>
 #include <fstream> 
 #include <sstream>
+#include "inputStringStream.h"
 
 class Operation;
 
@@ -20,22 +21,21 @@ public:
     void run();
 
 private:
-    void eval(std::istringstream& iss, std::istream& istr);
-    void del(std::istringstream& iss);
+    void eval(inputStringStream& iss, std::istream& istr);
+    void del(inputStringStream& iss);
     void help();
     void exit();
-    void read(std::istringstream& iss);
+    void read(inputStringStream& iss);
     void resize(std::istream& istr);
-    void checkEndOfInput(std::istringstream& iss);
 
 	bool m_isFromFile = false;
 
     template <typename FuncType>
-    void binaryFunc(std::istringstream& iss)
+    void binaryFunc(inputStringStream& iss)
     {
         if (auto f0 = readOperationIndex(iss), f1 = readOperationIndex(iss); f0 && f1)
         {
-            checkEndOfInput(iss);
+            iss.checkEndOfInput();
             m_operations.push_back(std::make_shared<FuncType>(m_operations[*f0], m_operations[*f1]));
         }
     }
@@ -46,11 +46,10 @@ private:
     	m_operations.push_back(std::make_shared<FuncType>());
 	}
     template <typename FuncType>
-    void unaryWithIntFunc(std::istringstream& iss)
+    void unaryWithIntFunc(inputStringStream& iss)
     {
-        int i = 0;
-        iss >> i;
-        checkEndOfInput(iss);
+        int i = iss.getInt();
+        iss.checkEndOfInput();
         m_operations.push_back(std::make_shared<FuncType>(i));
     }
     void printOperations() const;
@@ -88,10 +87,10 @@ private:
     bool m_running = true;
     std::ostream& m_ostr;
 
-    std::optional<int> readOperationIndex(std::istringstream& iss) const;
-    Action readAction(std::istringstream& iss) const;
+    std::optional<int> readOperationIndex(inputStringStream& iss) const;
+    Action readAction(inputStringStream& iss) const;
 
-    void runAction(Action action, std::istringstream& iss, std::istream& istr);
+    void runAction(Action action, inputStringStream& iss, std::istream& istr);
 	void checkMaxOperations() const;
 
     ActionMap createActions() const;

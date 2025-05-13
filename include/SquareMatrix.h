@@ -76,7 +76,7 @@ inline std::istream& operator>>(std::istream& istr, SquareMatrix<int>& matrix)
 
 		for (int j = 0; j < matrix.size(); ++j)
 		{
-			matrix(i, j) = iss.getInt(std::string("Matrix element out of range"));
+			matrix(i, j) = iss.getInt();
 		}
 		iss.checkEndOfInput();
 

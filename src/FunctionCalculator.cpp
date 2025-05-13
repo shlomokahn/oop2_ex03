@@ -31,10 +31,9 @@ void FunctionCalculator::run(std::istream& istr)
 
         m_ostr << "Enter command ('help' for the list of available commands): ";
 
-        std::getline(istr, inputLine);
+        
 
-        auto iss = std::istringstream(inputLine);
-        iss.exceptions(std::ios::failbit | std::ios::badbit);
+        inputStringStream iss(istr);
 
         const auto action = readAction(iss);
         runAction(action, iss, istr);
@@ -45,16 +44,9 @@ void FunctionCalculator::run(std::istream& istr)
         istr.clear();
 
         if (m_isFromFile)
-            throw std::invalid_argument(inputLine);
-    }
-    catch (...)
-    {
-        m_ostr << "Unknown error occurred\n";
-        istr.clear();
-
-        if(m_isFromFile)
-            throw std::invalid_argument(inputLine);
-        
+        {
+            throw std::invalid_argument(inputStringStream::getLine());
+        }
     }
 
 }
@@ -71,22 +63,14 @@ void FunctionCalculator::run()
 }
 //=================================
 
-void FunctionCalculator::eval(std::istringstream& iss, std::istream& istr)
+void FunctionCalculator::eval(inputStringStream& iss, std::istream& istr)
 {
     if (auto index = readOperationIndex(iss); index)
     {
         const auto& operation = m_operations[*index];
 		int inputCount = operation->inputCount();
-        int size = 0;
-        iss >> size;
-
-        if (size > 5) {
-            throw std::invalid_argument("Matrix size cannot be greater than 5");
-        }
-		if (size <= 0) {
-			throw std::invalid_argument("Matrix size must be positive");
-		}
-        checkEndOfInput(iss);
+        int size = iss.getInt("Matrix size must be between 1 and 5",1,5);
+        iss.checkEndOfInput();
 
 		auto matrixVec = std::vector<Operation::T>();
         if (inputCount > 1)
@@ -107,11 +91,11 @@ void FunctionCalculator::eval(std::istringstream& iss, std::istream& istr)
 }
 
 
-void FunctionCalculator::del(std::istringstream& iss)
+void FunctionCalculator::del(inputStringStream& iss)
 {
     if (auto i = readOperationIndex(iss); i)
     {
-        checkEndOfInput(iss);
+        iss.checkEndOfInput();
         m_operations.erase(m_operations.begin() + *i);
     }
 }
@@ -134,12 +118,13 @@ void FunctionCalculator::exit()
     m_running = false;
 }
 //=================================
-void FunctionCalculator::read(std::istringstream& iss)
+void FunctionCalculator::read(inputStringStream& iss)
 {
+    
     std::ifstream file;
-    std::string filename;
-	iss >> filename;
-    checkEndOfInput(iss);
+    std::string filename = iss.getString();
+    iss.checkEndOfInput();
+
     file.open(filename);
 	if (!file)
 	{
@@ -157,29 +142,18 @@ void FunctionCalculator::read(std::istringstream& iss)
         {
             m_ostr << "\nError in: " << e.what() << "\n"
                 <<"Continue reading from the file? (Yes = y,No = Any other buttou): ";
-			char YesNo;
-            std::cin >> YesNo;
+        
+            m_isFromFile = false;
+            char YesNo;
+            inputStringStream iss(std::cin);
+            YesNo = iss.getChar();
 
             if (YesNo == 'y' || YesNo == 'Y')
                 m_isFromFile = true;
-			else
-                m_isFromFile = false;
-
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
 
     } while (m_running && !file.eof() && m_isFromFile);
     m_isFromFile = false;
-}
-//==============================
-void FunctionCalculator::checkEndOfInput(std::istringstream& iss)
-{
-	if (iss.eof())
-		return;
-
-    iss >> std::ws;
-    if (!iss.eof())
-        throw std::invalid_argument("Too many characters");
 }
 //============================
 void FunctionCalculator::resize(std::istream& istr)
@@ -190,20 +164,16 @@ void FunctionCalculator::resize(std::istream& istr)
     m_ostr << "\nEnter the number of authorized operators: ";
         try
         {
-            if (!(istr >> size))
-            {
-                throw std::invalid_argument("Invalid input. Please enter a valid integer.");
-            }
-            // לבדוק שאין עוד תוים
-            if (size > 100 || size < 2)
-            {
-                throw std::invalid_argument("Max operations cannot be greater than 100 or smaller than 2.");
-            }
+			inputStringStream iss(istr);
+            size = iss.getInt("Max operations cannot be greater than 100 or smaller than 2.", 2, 100);
+           	iss.checkEndOfInput();
+         
 			if (size < m_operations.size())
 			{
 				m_ostr << "The number of operations is greater than the maximum allowed. To cancel the operation press 1 To delete the unnecessary functions press 2 .\n";
-				int choice = 0;
-				istr >> choice;
+                inputStringStream iss(istr);
+				int choice = iss.getInt("The number of operations is greater than the maximum allowed.",1,2);
+				iss.checkEndOfInput();
 				if (choice == 1)
 				{
 					m_ostr << "Canceled!.\n";
@@ -217,10 +187,6 @@ void FunctionCalculator::resize(std::istream& istr)
 					}
 					m_ostr << "The unnecessary functions have been deleted!.\n\n";
 				}
-				else
-				{
-					throw std::invalid_argument("The number of operations is greater than the maximum allowed.");
-				}
 			}
             m_maxOperations = size;
         }
@@ -230,7 +196,6 @@ void FunctionCalculator::resize(std::istream& istr)
         }
 
         istr.clear();
-        istr.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
 	while (size > m_maxOperations || size < 2);
 }
@@ -249,23 +214,17 @@ void FunctionCalculator::printOperations() const
 }
 
 
-std::optional<int> FunctionCalculator::readOperationIndex(std::istringstream& iss) const
+std::optional<int> FunctionCalculator::readOperationIndex(inputStringStream& iss) const
 {
-    int i = 0;
-    iss >> i;
-    if (i >= static_cast<int>(m_operations.size()) || i < 0)
-    {
-        throw std::invalid_argument("Operation #" + std::to_string(i) + " doesn't exist");
-        return {};
-    }
+    int i = iss.getInt("Operation doesn't exist",0, static_cast<int>(m_operations.size())-1);
     return i;
 }
 
 
-FunctionCalculator::Action FunctionCalculator::readAction(std::istringstream& iss) const
+FunctionCalculator::Action FunctionCalculator::readAction(inputStringStream& iss) const
 {
     auto action = std::string();
-    iss >> action;
+    action = iss.getString();
 
     const auto i = std::ranges::find(m_actions, action, &ActionDetails::command);
     if (i != m_actions.end())
@@ -277,7 +236,7 @@ FunctionCalculator::Action FunctionCalculator::readAction(std::istringstream& is
 }
 
 
-void FunctionCalculator::runAction(Action action, std::istringstream& iss, std::istream& istr)
+void FunctionCalculator::runAction(Action action, inputStringStream& iss, std::istream& istr)
 {
     switch (action)
     {
@@ -295,13 +254,13 @@ void FunctionCalculator::runAction(Action action, std::istringstream& iss, std::
         case Action::Sub:          checkMaxOperations(); binaryFunc<Sub>(iss);       break;
         case Action::Comp:         checkMaxOperations(); binaryFunc<Comp>(iss);      break;
         case Action::Del:          del(iss);                   break;
-        case Action::Help:         checkEndOfInput(iss);help();                     break;
-        case Action::Exit:         checkEndOfInput(iss);exit();                     break;
+        case Action::Help:         iss.checkEndOfInput();help();                     break;
+        case Action::Exit:         iss.checkEndOfInput();exit();                     break;
 		case Action::Read:         read(iss);                  break;
         //case Action::Iden:          unaryFunc<Identity>();      break;
         //case Action::Tran:          unaryFunc<Transpose>();      break;
         case Action::Scal:         checkMaxOperations(); unaryWithIntFunc<Scalar>(iss); break;
-        case Action::Resize:       checkEndOfInput(iss);resize(istr);                   break;
+        case Action::Resize:       iss.checkEndOfInput();resize(istr);                   break;
     }
 }
 //=================================

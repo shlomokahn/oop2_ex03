@@ -185,10 +185,32 @@ void FunctionCalculator::resize(std::istream& istr)
             {
                 throw std::invalid_argument("Max operations cannot be greater than 100 or smaller than 2.");
             }
-
+			if (size < m_operations.size())
+			{
+				m_ostr << "The number of operations is greater than the maximum allowed. To cancel the operation press 1 To delete the unnecessary functions press 2 .\n";
+				int choice = 0;
+				istr >> choice;
+				if (choice == 1)
+				{
+					m_ostr << "Canceled!.\n";
+					break;
+				}
+				else if (choice == 2)
+				{
+					for (int i = m_operations.size() - 1; i >= size; --i)
+					{
+						m_operations.erase(m_operations.begin() + i);
+					}
+					m_ostr << "The unnecessary functions have been deleted!.\n\n";
+				}
+				else
+				{
+					throw std::invalid_argument("The number of operations is greater than the maximum allowed.");
+				}
+			}
             m_maxOperations = size;
         }
-        catch (const std::invalid_argument& e)
+        catch (const std::exception& e)
         {
             m_ostr << "Error: " << e.what() << '\n';
         }

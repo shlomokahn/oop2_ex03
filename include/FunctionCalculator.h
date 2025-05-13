@@ -87,6 +87,7 @@ private:
     Action readAction(std::istringstream& iss) const;
 
     void runAction(Action action, std::istringstream& iss, std::istream& istr);
+	void checkMaxOperations() const;
 
     ActionMap createActions() const;
     OperationList createOperations() const ;

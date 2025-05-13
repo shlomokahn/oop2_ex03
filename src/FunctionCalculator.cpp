@@ -58,6 +58,7 @@ void FunctionCalculator::run(std::istream& istr,bool& isFromFile)
 void FunctionCalculator::run()
 {
 	bool isFromFile = false;
+	resize(std::cin);
     do
     {
         run(std::cin, isFromFile);
@@ -156,18 +157,33 @@ void FunctionCalculator::read(std::istringstream& iss)
 //============================
 void FunctionCalculator::resize(std::istream& istr)
 {
-    try {
-        m_ostr << "\nEnter the number of authorized operators: ";
-        int size;
-        istr >> size;
-        if (size > 100 || size < 2)
-            throw std::exception("Max oprations cannot be greater than 100 or smaler then 2");
-        m_maxOperations = size;
-    }
-    catch (std::exception& e)
+    int size = 0;
+    do
     {
-      m_ostr << "Error: " << e.what();
+    m_ostr << "\nEnter the number of authorized operators: ";
+        try
+        {
+            if (!(istr >> size))
+            {
+                throw std::invalid_argument("Invalid input. Please enter a valid integer.");
+            }
+
+            if (size > 100 || size < 2)
+            {
+                throw std::invalid_argument("Max operations cannot be greater than 100 or smaller than 2.");
+            }
+
+            m_maxOperations = size;
+        }
+        catch (const std::invalid_argument& e)
+        {
+            m_ostr << "Error: " << e.what() << '\n';
+        }
+
+        istr.clear();
+        istr.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
+	while (size > m_maxOperations || size < 2);
 }
 //============================
 
@@ -226,21 +242,28 @@ void FunctionCalculator::runAction(Action action, std::istringstream& iss, std::
             break;
 
         case Action::Eval:         eval(iss,istr);             break;
-        case Action::Add:          binaryFunc<Add>(iss);       break;
-        case Action::Sub:          binaryFunc<Sub>(iss);       break;
-        case Action::Comp:         binaryFunc<Comp>(iss);      break;
+        case Action::Add:          checkMaxOperations(); binaryFunc<Add>(iss);       break;
+        case Action::Sub:          checkMaxOperations(); binaryFunc<Sub>(iss);       break;
+        case Action::Comp:         checkMaxOperations(); binaryFunc<Comp>(iss);      break;
         case Action::Del:          del(iss);                   break;
         case Action::Help:         help();                     break;
         case Action::Exit:         exit();                     break;
 		case Action::Read:         read(iss);                  break;
         //case Action::Iden:          unaryFunc<Identity>();      break;
         //case Action::Tran:          unaryFunc<Transpose>();      break;
-        case Action::Scal:         unaryWithIntFunc<Scalar>(iss); break;
+        case Action::Scal:         checkMaxOperations(); unaryWithIntFunc<Scalar>(iss); break;
         case Action::Resize:       resize(istr);                   break;
     }
 }
-
-
+//=================================
+void FunctionCalculator::checkMaxOperations() const
+{
+	if (m_operations.size() >= m_maxOperations)
+	{
+		throw std::invalid_argument("The number of operations exceeds the maximum allowed");
+	}
+}
+//=================================
 FunctionCalculator::ActionMap FunctionCalculator::createActions() const
 {
     return ActionMap

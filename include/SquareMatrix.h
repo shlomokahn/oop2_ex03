@@ -3,6 +3,7 @@
 #include <vector>
 #include <iostream>
 #include <sstream>
+#include <inputStringStream.h>
 
 
 template <typename T>
@@ -71,26 +72,14 @@ inline std::istream& operator>>(std::istream& istr, SquareMatrix<int>& matrix)
 {
 	for (int i = 0; i < matrix.size(); ++i)
 	{
-		std::string inputLine;
-		std::getline(istr, inputLine);
-
-		auto iss = std::istringstream(inputLine);
-		iss.exceptions(std::ios::failbit | std::ios::badbit);
+		inputStringStream iss(istr);
 
 		for (int j = 0; j < matrix.size(); ++j)
 		{
-			iss >> matrix(i, j);
-			if (matrix(i, j) > 1000 || matrix(i, j) < -1024)
-			{
-				throw std::invalid_argument("Matrix element out of range");
-			}
+			matrix(i, j) = iss.getInt(std::string("Matrix element out of range"));
 		}
-			if (!iss.eof())
-				iss >> std::ws;
-			if (!iss.eof())
-				throw std::invalid_argument("Too many characters");
+		iss.checkEndOfInput();
 
-		
 	}
 	return istr;
 }

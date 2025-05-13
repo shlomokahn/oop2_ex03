@@ -79,7 +79,6 @@ void FunctionCalculator::eval(std::istringstream& iss, std::istream& istr)
 		int inputCount = operation->inputCount();
         int size = 0;
         iss >> size;
-        checkEndOfInput(iss);
 
         if (size > 5) {
             throw std::invalid_argument("Matrix size cannot be greater than 5");
@@ -87,6 +86,7 @@ void FunctionCalculator::eval(std::istringstream& iss, std::istream& istr)
 		if (size <= 0) {
 			throw std::invalid_argument("Matrix size must be positive");
 		}
+        checkEndOfInput(iss);
 
 		auto matrixVec = std::vector<Operation::T>();
         if (inputCount > 1)
@@ -155,7 +155,7 @@ void FunctionCalculator::read(std::istringstream& iss)
 
         catch(const std::exception& e)
         {
-            m_ostr << "Error in:" << e.what() << "\n"
+            m_ostr << "\nError in: " << e.what() << "\n"
                 <<"Continue reading from the file? (Yes = y,No = Any other buttou): ";
 			char YesNo;
             std::cin >> YesNo;

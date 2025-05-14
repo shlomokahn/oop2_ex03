@@ -198,7 +198,7 @@ void FunctionCalculator::resize(std::istream& istr)
 
         istr.clear();
     }
-	while (size > m_maxOperations || size < 2);
+	while (size != m_maxOperations || size < m_operations.size());
 }
 //============================
 

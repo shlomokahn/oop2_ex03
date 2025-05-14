@@ -183,10 +183,8 @@ void FunctionCalculator::resize(std::istream& istr)
 				}
 				else if (choice == 2)
 				{
-					for (int i = m_operations.size() - 1; i >= size; --i)
-					{
-						m_operations.erase(m_operations.begin() + i);
-					}
+                    m_operations.erase(m_operations.begin() + size, m_operations.end());
+
 					m_ostr << "The unnecessary functions have been deleted!.\n\n";
 				}
 			}

@@ -192,7 +192,7 @@ void FunctionCalculator::resize(std::istream& istr)
         }
         catch (const std::exception& e)
         {
-            m_ostr << "Error: " << e.what() << '\n';//צריך לבדוק פה באג
+            m_ostr << "Error: " << e.what() << '\n';
         }
 
         istr.clear();

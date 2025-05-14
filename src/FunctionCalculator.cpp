@@ -42,6 +42,7 @@ void FunctionCalculator::run(std::istream& istr)
     {
         if (m_isFromFile)
         {
+			istr.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             throw std::invalid_argument(inputStringStream::getLine() + " : Error: " + e.what());
         }
 
@@ -193,7 +194,7 @@ void FunctionCalculator::resize(std::istream& istr)
         }
         catch (const std::exception& e)
         {
-            m_ostr << "Error: " << e.what() << '\n';
+            m_ostr << "Error: " << e.what() << '\n';//צריך לבדוק פה באג
         }
 
         istr.clear();
